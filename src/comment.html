@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment</title>
+    <link rel="stylesheet" href="../src/assets/css/comment.css">
+    <script src="lib/session.js" async></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src=" https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js "></script>
+    <script src="lib/comment.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Comments</h1>
+            <a href="home.html" class="close-btn">X</a>
+        </header>
+
+        <div id="comment">
+            <ul class="comment-list">
+                <li v-for="item in comments" :key="item.id" class="comment-item">
+                    <div class="comment-info">
+                        <span class="username">{{ item.fullname }}</span>
+                        <span class="timestamp">{{ item.created_at }}</span>
+                    </div>
+
+                    <template v-if="item.user_id == owner">
+                        <div class="comment-actions">
+                            <button @click="editComment(item.comment_id)" class="edit-btn float-end">Edit</button>
+                            <button @click="deleteComment(item.comment_id)" class="delete-btn">Delete</button>
+                        </div>
+                    </template>
+
+                    <p v-if="!item.isEditing" class="comment-text">{{ item.comment_text }}</p>
+
+                    <div v-else class="edit-comment">
+                        <input v-model="item.editedComment" class="edit-input">
+                        <button @click="saveEditedComment(item)" class="save-btn">Save</button>
+                        <button @click="cancelEdit(item)" class="cancel-btn">Cancel</button>
+                    </div>
+
+                    <hr class="divider">
+                </li>
+            </ul>
+        </div>
+
+        <div class="comment-form">
+            <form id="commentme" class="comment-form">
+                <input type="hidden" id="user_iddd" name="userid">
+                <input type="hidden" id="post_iddd" name="postid">
+                <textarea name="commenttext" cols="30" rows="2" class="comment-textarea" placeholder="Write your comment here..."></textarea>
+                <button class="comment-btn">Comment</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+
+        window.onload = function() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const postId = urlParams.get('post');
+          const uId = localStorage.getItem('user_id');
+          document.getElementById("post_iddd").value = postId;
+          document.getElementById("user_iddd").value = uId;
+        };
+        document.getElementById('commentme').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('../api/comment/create_comment.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            });
+        });
+
+
+        
+    </script>
+</body>
+</html>
